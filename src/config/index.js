@@ -4,5 +4,5 @@ dotenv.config();
 
 module.exports={
 
-    PORT:process.env.PORT
+    Server_config:require('./Server-config'),
 }
