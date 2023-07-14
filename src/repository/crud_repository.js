@@ -41,6 +41,18 @@ class CrudRepository {
   }
 
 
+  async get(id) {
+  
+    const response = await this.model.findByPk(id);
+    if(!response){
+
+      throw new AppError(" Somethng Went Wrong .. " , StatusCodes.NOT_FOUND);
+     }
+
+    return response;
+
+    }
+
 
 
   async destroy(data) {

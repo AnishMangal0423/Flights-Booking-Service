@@ -6,9 +6,6 @@ const {
 
 
 const{Enum}=require('../utils/common/index');
-
-
-
 const {BOOKED , CANCELLED , INITIATED , PENDING }=Enum.BOOKING_STATUS
 
 module.exports = (sequelize, DataTypes) => {
