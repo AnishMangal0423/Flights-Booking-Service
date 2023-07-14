@@ -4,9 +4,8 @@ const { Server_config } = require("../config");
 const AppError = require("../utils/errors/AppError");
 const { StatusCodes } = require("http-status-codes");
 const BookingRepository = require("../repository/booking-repository");
-const{Enum}=require('../utils/common/index');
-const {BOOKED , CANCELLED , INITIATED , PENDING }=Enum.BOOKING_STATUS
-
+const { Enum } = require("../utils/common/index");
+const { BOOKED, CANCELLED, INITIATED, PENDING } = Enum.BOOKING_STATUS;
 
 const bookingRepository = new BookingRepository();
 
@@ -52,46 +51,106 @@ async function createBooking(data) {
 }
 
 
-async function createPayments(data){
 
-    const transaction = await db.sequelize.transaction();
 
-    try{
-    const bookingDetails=await bookingRepository.getBooking(data.bookingId , transaction);
+
+
+async function cancelBooking(data) {
+    console.log("jjjii")
+  const transaction = await db.sequelize.transaction();
+
+  try {
+    const bookingDetails = await bookingRepository.getBooking(
+      data.bookingId,
+      transaction
+    );
+
+    if (bookingDetails.status == CANCELLED) {
+      await transaction.commit();
+
+      return true;
+    }
+    console.log('noof seats     -->>> '+bookingDetails.noOfSeats)
+
+    await axios.patch(
+      `${Server_config.FLIGHT_SERVICE}/api/v1/flights/${bookingDetails.flightId}/seats`,
+      { seat: bookingDetails.noOfSeats,
+         dec: false }
+    );
+
+   
+    const updatebooking = await bookingRepository.updateBooking(
+      { status: CANCELLED },
+      data.bookingId,
+      transaction
+    );
+
+    await transaction.commit();
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+}
+
+
+
+
+
+async function createPayments(data) {
+  const transaction = await db.sequelize.transaction();
+      console.log("data.bokingid" , data.bookingId)
+  try {
+    const bookingDetails = await bookingRepository.getBooking(
+      data.bookingId,
+      transaction
+    );
     // console.log(bookingDetails);
 
     const bookingTime = new Date(bookingDetails.createdAt);
     const currentTime = new Date();
 
-    if(currentTime- bookingTime  > 60000){
 
-        const updatebooking= await bookingRepository.updateBooking({status:CANCELLED},data.bookingId,transaction);
-        throw new AppError( "Booking Time Expired", StatusCodes.INTERNAL_SERVER_ERROR);        
+    if (bookingDetails.userId != data.userId) {
+      throw new AppError(
+        "User who started booking process and payment are not same ",
+        StatusCodes.BAD_REQUEST
+      );
     }
 
-    if(bookingDetails.userId != data.userId){
-        
-        throw new AppError( "User who started booking process and payment are not same ", StatusCodes.BAD_REQUEST );
+    if (bookingDetails.totalCost != data.totalCost) {
+      throw new AppError(
+        "Total Cost u are paying and booking cost are not same ",
+        StatusCodes.BAD_REQUEST
+      );
     }
 
 
-    if(bookingDetails.totalCost != data.totalCost){
-
-        throw new AppError( "Total Cost u are paying and booking cost are not same ", StatusCodes.BAD_REQUEST );
+    if (currentTime - bookingTime > 60000) {
+      cancelBooking({ bookingId: data.bookingId });
+      throw new AppError(
+        "Payment Time Expired",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
     }
 
-    const updatebooking= await bookingRepository.updateBooking({status:BOOKED},data.bookingId,transaction);
+    const updatebooking = await bookingRepository.updateBooking(
+      { status: BOOKED },
+      data.bookingId,
+      transaction
+    );
 
-await transaction.commit();
-    }
+    await transaction.commit();
+  } catch (error) {
 
-    catch(error){
-
-        await transaction.rollback();
-        throw error;
-    }
-
+    console.log("eeerrr ",error)
+    await transaction.rollback();
+    throw error;
+  }
 }
+
+
+
+
 
 
 module.exports = {

@@ -1,6 +1,7 @@
 const CrudRepository = require("./crud_repository");
 const { Booking } = require("../models");
 const{StatusCodes}=require('http-status-codes')
+const AppError = require("../utils/errors/AppError");
 
 
 class BookingRepository extends CrudRepository {
@@ -30,10 +31,12 @@ class BookingRepository extends CrudRepository {
   
   async getBooking(id, transaction) {
   
-    const response = await this.model.findByPk(id, {transaction:transaction});
+
+    const response = await  Booking.findByPk(id, {transaction:transaction});
+    console.log("resss "+ response)
     if(!response){
 
-      throw new AppError(" Somethng Went Wrong .. " , StatusCodes.NOT_FOUND);
+      throw new AppError(" Somethng Went Wrong cannot get booking details .. " , StatusCodes.NOT_FOUND);
      }
 
     return response;
