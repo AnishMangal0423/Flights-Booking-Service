@@ -135,7 +135,27 @@ async function createPayments(data) {
   }
 }
 
+
+
+
+async function canceloldBookings(){
+
+  try {
+
+
+    const currentTime=new Date( Date.now() - 1000*300);
+    // console.log(currentTime , bookingRepository.cancelOldBookings())
+    const response = await bookingRepository.cancelOldBookings(currentTime)
+
+    return response;
+  } catch (error) {
+    console.log(error);
+    // throw error;
+  }
+}
+
 module.exports = {
   createBooking,
   createPayments,
+  canceloldBookings
 };

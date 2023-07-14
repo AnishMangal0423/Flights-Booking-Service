@@ -1,6 +1,7 @@
 const express = require("express");
 const { Server_config} = require("./config");
 const mountRoutes = require("./routes");
+const Cron = require('./utils/common/cron-jobs')
 
 
 const app = express();
@@ -21,4 +22,5 @@ app.use("/api", mountRoutes);
 
 app.listen(Server_config.PORT, function exec() {
   console.log(`Starting My server at Port ${Server_config.PORT}`);
+  Cron();
 });
