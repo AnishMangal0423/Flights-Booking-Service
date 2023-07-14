@@ -50,13 +50,8 @@ async function createBooking(data) {
   }
 }
 
-
-
-
-
-
 async function cancelBooking(data) {
-    console.log("jjjii")
+  console.log("jjjii");
   const transaction = await db.sequelize.transaction();
 
   try {
@@ -65,20 +60,18 @@ async function cancelBooking(data) {
       transaction
     );
 
-    if (bookingDetails.status == CANCELLED) {
+    if (bookingDetails.status == CANCELLED || bookingDetails.status == BOOKED) {
       await transaction.commit();
 
       return true;
     }
-    console.log('noof seats     -->>> '+bookingDetails.noOfSeats)
+    // console.log("noof seats     -->>> " + bookingDetails.noOfSeats);
 
     await axios.patch(
       `${Server_config.FLIGHT_SERVICE}/api/v1/flights/${bookingDetails.flightId}/seats`,
-      { seat: bookingDetails.noOfSeats,
-         dec: false }
+      { seat: bookingDetails.noOfSeats, dec: false }
     );
 
-   
     const updatebooking = await bookingRepository.updateBooking(
       { status: CANCELLED },
       data.bookingId,
@@ -92,13 +85,10 @@ async function cancelBooking(data) {
   }
 }
 
-
-
-
-
 async function createPayments(data) {
+
   const transaction = await db.sequelize.transaction();
-      console.log("data.bokingid" , data.bookingId)
+  // console.log("data.bokingid", data.bookingId);
   try {
     const bookingDetails = await bookingRepository.getBooking(
       data.bookingId,
@@ -108,7 +98,6 @@ async function createPayments(data) {
 
     const bookingTime = new Date(bookingDetails.createdAt);
     const currentTime = new Date();
-
 
     if (bookingDetails.userId != data.userId) {
       throw new AppError(
@@ -124,8 +113,7 @@ async function createPayments(data) {
       );
     }
 
-
-    if (currentTime - bookingTime > 60000) {
+    if (currentTime - bookingTime > 300000) {
       cancelBooking({ bookingId: data.bookingId });
       throw new AppError(
         "Payment Time Expired",
@@ -141,17 +129,11 @@ async function createPayments(data) {
 
     await transaction.commit();
   } catch (error) {
-
-    console.log("eeerrr ",error)
+    console.log("eeerrr ", error);
     await transaction.rollback();
     throw error;
   }
 }
-
-
-
-
-
 
 module.exports = {
   createBooking,
