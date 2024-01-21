@@ -6,7 +6,8 @@ function info(req , res){
 
                message:"ok",
                info_data:{},
-               if:"pranu"
+               if:"pranu",
+               loc:"Bookings-service"
                })
 }
 

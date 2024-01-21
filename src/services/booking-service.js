@@ -6,17 +6,29 @@ const { StatusCodes } = require("http-status-codes");
 const BookingRepository = require("../repository/booking-repository");
 const { Enum } = require("../utils/common/index");
 const { BOOKED, CANCELLED, INITIATED, PENDING } = Enum.BOOKING_STATUS;
+const {Queue}=require('../config');
+const { json } = require("sequelize");
 
 const bookingRepository = new BookingRepository();
 
 async function createBooking(data) {
+  
+console.log(data)
+
   const transaction = await db.sequelize.transaction();
 
   try {
+
+    
     const flight = await axios.get(
       `${Server_config.FLIGHT_SERVICE}/api/v1/flights/${data.flightId}`
     );
+
+    console.log("after" + flight);
     const flightData = flight.data.Correct_Res.data;
+
+
+
 
     if (flightData.totalSeats < data.noOfSeats) {
       throw new AppError(
@@ -45,13 +57,34 @@ async function createBooking(data) {
     await transaction.commit();
     return booking;
   } catch (error) {
-    await transaction.rollback();
+
+    // console.log("hii   " + error)
+    // await transaction.rollback();
+    // throw error;
+
+
+
+
+
+    console.log("Error occurred:", error);
+
+    // Log the underlying errors if available
+    if (error.errors) {
+      console.log("Underlying errors:", error.errors);
+    }
+  
+    try {
+      await transaction.rollback();
+    } catch (rollbackError) {
+      console.log("Error during rollback:", rollbackError);
+    }
+  
     throw error;
   }
 }
 
 async function cancelBooking(data) {
-  console.log("jjjii");
+  // console.log("jjjii");
   const transaction = await db.sequelize.transaction();
 
   try {
@@ -127,7 +160,24 @@ async function createPayments(data) {
       transaction
     );
 
+
+
+    const flight = await axios.get(
+      `${Server_config.FLIGHT_SERVICE}/api/v1/flights/${bookingDetails.flightId}`
+    );
+    const flightData = flight.data.Correct_Res.data;
+
+    await Queue.sendData({
+
+      recepientEmail:'anishm0423@gmail.com',
+      subject:"flight booked",
+      text:` Booking is done for booking id as ${data.bookingId}`
+   })
+
+
     await transaction.commit();
+
+
   } catch (error) {
     console.log("eeerrr ", error);
     await transaction.rollback();
