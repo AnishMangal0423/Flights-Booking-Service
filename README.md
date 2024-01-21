@@ -1,5 +1,5 @@
 # Flight Booking Service
-This repository contains the source code and assets of Flight Search Service . The purpose of this Repository is to Note down all the Flights based on Filters like Source to Destination , Date , Time , Price , Number of Passengers.
+This repository contains the source code and assets of Flight Booking Service . The purpose of this Repository is to Make the Booking of Ticket After Searching the Flight according to Date, Time , Price on Flight-Search Service.
 
 ## Block Diagram 
 
@@ -27,9 +27,9 @@ This repository contains the source code and assets of Flight Search Service . T
 * ChatGPT helped me in development, CSS formatting and debugging.
 * Github for free deployment of website. -->
 
- For Accessing My Flight Search Services and Interacting with My Database use- 
- * http://localhost:3000/api/v1/flights
- * API Gateway Link -> http://localhost:5000/flightService/api/v1/flights
+ For Accessing My Flight Booking Services and Interacting with My Database use- 
+ * http://localhost:5000/api/v1/flights
+ * API Gateway Link -> http://localhost:5500/flightService/api/v1/flights
 
 ## Contact
 If you have any questions, suggestions, or feedback, feel free to contact me through the following channels:
